@@ -8,6 +8,16 @@ on:
         required: true
         default: 'latest'
 
+env:
+  # you need at least cuda 5.0 for some of the stuff compiled here.
+  TORCH_CUDA_ARCH_LIST: 6.0+PTX 7.0 7.5 8.0+PTX
+  HIP_ARCHITECTURES: ''
+  MAX_JOBS: 4
+  DISTUTILS_USE_SDK: 1 # otherwise distutils will complain on windows about multiple versions of msvc
+  XFORMERS_BUILD_TYPE: "Release"
+  TWINE_USERNAME: __token__
+  XFORMERS_PACKAGE_FROM: "wheel-main"
+
 jobs:
   install:
     runs-on: windows-2022
@@ -17,7 +27,7 @@ jobs:
     - name: Enable long paths
       run: |
         reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
-
+        
     - if: runner.os == 'Windows'
       run: git config --system core.longpaths true
 
@@ -42,6 +52,30 @@ jobs:
         dir third_party
         dir third_party/flash-attention
 
+    - name: Setup Runner
+      uses: ./.github/actions/setup-build-cuda
+      with:
+        toolkit_type: 'cuda'
+        toolkit_short_version: '118'
+        python: '3.10'
+
+    - name: Define version
+      id: xformers_version
+      env:
+        VERSION_SOURCE: 'tag'
+      run: |
+        set -Eeuo pipefail
+        git config --global --add safe.directory "*"
+        version=`python .github/compute_wheel_version.py --source $VERSION_SOURCE`
+        echo $version > version.txt
+        echo "BUILD_VERSION=$version${{ steps.cuda_info.outputs.CUDA_VERSION_SUFFIX }}" >> ${GITHUB_ENV}
+        echo "BUILD_VERSION=$version${{ steps.cuda_info.outputs.CUDA_VERSION_SUFFIX }}" >> ${GITHUB_OUTPUT}
+        which ninja
+        cat ${GITHUB_ENV}
+    - run: echo "xformers-${BUILD_VERSION}"
+    - run: echo "release version (will upload to PyTorch)"
+      if: ${{ !contains(steps.xformers_version.outputs.BUILD_VERSION, '.dev') }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
@@ -52,9 +86,9 @@ jobs:
       run: |
           python setup.py bdist_wheel -d dist/ -k $PLAT_ARG
       env:
-        PLAT_ARG: ${{ contains(inputs.os, 'ubuntu') && '--plat-name manylinux_2_28_x86_64' || '' }}
+        PLAT_ARG: ''
 
     - uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+${{ contains(inputs.toolkit_type, 'cuda') && 'cu' || 'rocm' }}${{ inputs.toolkit_short_version }}_${{ inputs.artifact_tag }}
+        name: xformers-0.0.28post3+cu118-py310-torch2.5.1
         path: dist/*.whl
