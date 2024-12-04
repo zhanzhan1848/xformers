@@ -16,6 +16,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        submodules: true  # 初始化并更新子模块
 
     - name: Setup Python 3.10
       uses: actions/setup-python@v4
