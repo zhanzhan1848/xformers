@@ -21,11 +21,12 @@ jobs:
     - name: Checkout code without checking out submodules
       uses: actions/checkout@v3
       with:
-        submodules: true
+        submodules: false
 
-    - name: Initialize submodules
+    - name: Manually initialize and update submodules (except composable_kernel_tiled)
       run: |
-        git submodule update --init --recursive --no-checkout
+        git submodule update --init --recursive
+        git submodule deinit -f third_party/composable_kernel_tiled  # Skip the specific submodule
         git submodule update --recursive
 
     - name: Set Git long paths
