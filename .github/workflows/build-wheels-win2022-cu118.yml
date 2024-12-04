@@ -50,42 +50,11 @@ jobs:
 
     - name: Build wheel
       run: |
-        python setup.py bdist_wheel -d dist/
-
-    - name: 'Zip files'
-      run: Compress-Archive -Path "dist/" -DestinationPath xformers-wheel.zip
-
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: xformers-wheel
-        path: xformers-wheel.zip
-
-  release:
-    needs: install
-    runs-on: windows-2022
-    steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: xformers-windows-cu118
-
-    - name: Create GitHub Release
-      uses: actions/create-release@v1
+          $PY setup.py bdist_wheel -d dist/ -k $PLAT_ARG
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: "v${{ github.run_number }}"
-        release_name: "Windows CUDA 11.8 Build - Python 3.10"
-        draft: false
-        prerelease: false
+        PLAT_ARG: ${{ contains(inputs.os, 'ubuntu') && '--plat-name manylinux_2_28_x86_64' || '' }}
 
-    - name: Upload release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/upload-artifact@v4
       with:
-        upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_path: dist/
-        asset_name: "xformers-0.0.28post3+cu118_cp310_cp310-win_amd64.whl"
-        asset_content_type: application/zip
+        name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+${{ contains(inputs.toolkit_type, 'cuda') && 'cu' || 'rocm' }}${{ inputs.toolkit_short_version }}_${{ inputs.artifact_tag }}
+        path: dist/*.whl
