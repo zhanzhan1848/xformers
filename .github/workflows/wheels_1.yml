@@ -1,18 +1,6 @@
 name: wheels_1
 
 on:
-  pull_request:
-    paths:
-      - ".github/compute_wheel_version.py"
-      - ".github/workflows/wheel*"
-      - ".github/actions/setup-build-cuda/action.yml"
-      - "setup.py"
-      - "requirements*.txt"
-  push:
-    branches:
-      - main
-    tags:
-      - "v[0-9]+*"
   workflow_dispatch:  # Allows you to manually trigger the workflow from the GitHub Actions tab.
     inputs:
       release_tag:
