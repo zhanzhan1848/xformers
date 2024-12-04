@@ -9,7 +9,7 @@ on:
         default: 'latest'
 
 jobs:
-  build:
+  install:
     runs-on: windows-2022
     env:
       CUDA_VERSION: "11.8"  # CUDA 版本
@@ -57,6 +57,16 @@ jobs:
       with:
         name: xformers-windows-cu118
         path: dist/
+
+  build:
+    needs: install
+    uses: ./.github/workflows/wheels_build.yml
+    with:
+      os: 'win'
+      python: '3.10'
+      torch_version: '2.5.1'
+      toolkit_type: 'cuda'
+      toolkit_short_version: '118'
 
   release:
     needs: build
