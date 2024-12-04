@@ -50,7 +50,7 @@ jobs:
 
     - name: Build wheel
       run: |
-          $PY setup.py bdist_wheel -d dist/ -k $PLAT_ARG
+          python setup.py bdist_wheel -d dist/ -k $PLAT_ARG
       env:
         PLAT_ARG: ${{ contains(inputs.os, 'ubuntu') && '--plat-name manylinux_2_28_x86_64' || '' }}
 
