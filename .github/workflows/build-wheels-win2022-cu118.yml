@@ -26,14 +26,6 @@ jobs:
       with:
         submodules: true
 
-    - name: Set Git long paths
-      run: |
-        git config --global core.longpaths true
-
-    - name: Verify Git long paths
-      run: |
-        git config --get core.longpaths
-
     - name: Install Python 3.10
       uses: actions/setup-python@v4
       with:
@@ -47,8 +39,8 @@ jobs:
     - name: Verify third-party dependencies
       run: |
         echo "Checking third-party folder structure..."
-        dir xformers/third_party
-        dir xformers/third_party/flash-attention
+        dir third_party
+        dir third_party/flash-attention
 
     - name: Install dependencies
       run: |
