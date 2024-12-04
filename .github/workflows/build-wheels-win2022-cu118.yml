@@ -57,7 +57,7 @@ jobs:
     - name: Define version
       id: xformers_version
       env:
-        VERSION_SOURCE: 'tag'
+        VERSION_SOURCE: ${{ github.ref_type == 'tag' && 'tag' || 'dev'  }}
       run: |
         set -Eeuo pipefail
         git config --global --add safe.directory "*"
