@@ -21,6 +21,9 @@ env:
 jobs:
   install:
     runs-on: windows-2022
+    defaults:
+      run:
+        shell: bash
     env:
       CUDA_VERSION: "11.8"  # CUDA 版本
     steps:
@@ -73,8 +76,6 @@ jobs:
         which ninja
         cat ${GITHUB_ENV}
     - run: echo "xformers-${BUILD_VERSION}"
-    - run: echo "release version (will upload to PyTorch)"
-      if: ${{ !contains(steps.xformers_version.outputs.BUILD_VERSION, '.dev') }}
 
     - name: Install dependencies
       run: |
