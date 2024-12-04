@@ -18,14 +18,15 @@ jobs:
       run: |
         reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
 
-    - name: Checkout code
+    - name: Checkout code without checking out submodules
       uses: actions/checkout@v3
       with:
-        submodules: true  # 初始化并更新子模块
-        persist-credentials: false
-        fetch-depth: 0
-      env:
-        GIT_OPTIONAL_LOCKS: 0
+        submodules: false
+
+    - name: Initialize submodules
+      run: |
+        git submodule update --init --recursive --no-checkout
+        git submodule update --recursive
 
     - name: Set Git long paths
       run: |
