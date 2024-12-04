@@ -21,7 +21,7 @@ jobs:
     - name: Checkout code without checking out submodules
       uses: actions/checkout@v3
       with:
-        submodules: false
+        submodules: true
 
     - name: Initialize submodules
       run: |
