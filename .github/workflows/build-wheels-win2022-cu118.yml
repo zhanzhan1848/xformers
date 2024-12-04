@@ -48,28 +48,21 @@ jobs:
         python -m pip install torch==2.5.1+cu118 torchvision==0.16.1+cu118 torchaudio==2.5.1+cu118 --index-url https://download.pytorch.org/whl/cu118
         python -m pip install -r requirements.txt
 
-    - name: Build xformers wheel
+    - name: Build wheel
       run: |
-        python setup.py bdist_wheel
+        python setup.py bdist_wheel -d dist/
+
+    - name: 'Zip files'
+      run: Compress-Archive -Path "dist/" -DestinationPath xformers-wheel.zip
 
     - name: Upload build artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: xformers-windows-cu118
-        path: dist/
-
-  build:
-    needs: install
-    uses: ./.github/workflows/wheels_build.yml
-    with:
-      os: 'win'
-      python: '3.10'
-      torch_version: '2.5.1'
-      toolkit_type: 'cuda'
-      toolkit_short_version: '118'
+        name: xformers-wheel
+        path: xformers-wheel.zip
 
   release:
-    needs: build
+    needs: install
     runs-on: windows-2022
     steps:
     - name: Download artifact
